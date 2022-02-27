@@ -1,5 +1,8 @@
 '''
 Class to record and play back mouse clicks and keyboard presses using pynput.
+
+Note: May have compatibility issues with different OS and resolutions
+
 '''
 
 from pynput import mouse, keyboard
@@ -15,10 +18,17 @@ class Recorder():
         self.kb_listener = keyboard.Listener(on_press = self.on_press, 
                              on_release = self.on_release)
 
+        #Init keyboard and mouse controllers
+        self.m_controller = mouse.Controller()
+        self.kb_controller = keyboard.Controller()
+
         self.recording = False                  #Recording status
         self.recorded_moves = []                #Record of recorded moves
         self.start_time = time.time()           #Start time of recording
         self.stop_key = keyboard.Key.esc        #Key to stop recording
+
+        self.timeout = 120        #Default timeout (s) for playback
+        self.wait_time = 0.01     #Minimum time between executing playback steps
 
 
     def on_click(self, x, y, button, pressed):
@@ -84,13 +94,8 @@ class Recorder():
         while self.recording:
             continue
         self.on_stop()
-        
-
-        # with self.m_listener as m_listener, self.kb_listener as kb_listener:
-        #     m_listener.join()
-        #     kb_listener.join()
     
-
+    
     def on_record(self):
         '''Set up recording of kbm presses'''
         print('Begin recording keyboard and mouse inputs.\n'\
@@ -109,6 +114,7 @@ class Recorder():
         #Stop the listeners
         self.m_listener.stop()
         self.kb_listener.stop()
+
 
     def write(self, filepath):
         '''Write recorded moves to csv file'''
@@ -132,10 +138,80 @@ class Recorder():
         return time.time() - self.start_time
 
 
+    def play(self):
+        '''Play back recorded mouse clicks and key presses'''
+        self.on_play()
+
+        #Iterate through stored moves
+        for move in self.recorded_moves:
+            move_time = move[0]
+            self.wait(move_time)                        #Wait to execute next move
+            self.execute_move(move)
+        
+        self.on_play_finish()
+
+    def on_play(self):
+        '''Set up for playback of recording'''
+        self.start_time = time.time()
+        print('Begin playback of recorded clicks/key presses')
+
+    
+    def wait(self, target_time):
+        '''
+        Wait until specified target_time has elapsed from self.start_time
+        
+        Raises TimeoutError if wait time exceeds self.timout
+        '''
+        while self.time_elapsed() < target_time:
+            time.sleep(self.wait_time)
+            if self.time_elapsed() >= self.timeout:
+                raise TimeoutError('Timeout while waiting for next playback command')
+
+
+    def execute_move(self, move):
+        '''Execute a mouse/keyboard move'''
+        mouse_bool = move[1]
+
+        #Mouse presses
+        if mouse_bool:
+            x, y, button, m_pressed = move[2], move[3], move[4], move[5]
+            self.click_mouse(x, y, button, m_pressed)
+
+        #Keyboard presses
+        else:
+            key, k_pressed = move[6], move[7]
+            self.press_key(key, k_pressed)
+
+
+    def click_mouse(self, x, y, button, pressed):
+        '''Execute a mouse click or release at desired (x, y) position'''
+        self.m_controller.move(x, y)
+        print(x,y)
+
+        if pressed:
+            self.m_controller.press(button)
+        else:
+            self.m_controller.release(button)
+
+
+    def press_key(self, key, pressed):
+        '''Execute a key press or release'''
+        if pressed:
+            self.kb_controller.press(key)
+        else:
+            self.kb_controller.release(key)
+
+    
+    def on_play_finish(self):
+        '''After finishing playback of record clicks/key presses'''
+        print('Completed playback of clicks/key presses')
+
+
 
 
 if __name__ == '__main__':
     recorder = Recorder()
     recorder.record()
     recorder.write('recordings/test.csv')
+    recorder.play()
     
