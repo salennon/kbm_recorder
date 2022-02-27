@@ -1,8 +1,13 @@
+'''
+Class to record and play back mouse clicks and keyboard presses using pynput.
+'''
 
 from pynput import mouse, keyboard
 import time
+import pandas as pd
 
 class Recorder():
+    '''Class to handle recording and playback of mouse clicks'''
 
     def __init__(self):
         #Init keyboard and mouse listeners
@@ -24,7 +29,7 @@ class Recorder():
 
 
     def append_click(self, x, y, button, pressed):
-        '''Extract and append click data. See save for format'''
+        '''Extract and append click data. See write method for format'''
         click_data = [
                         self.time_elapsed(),
                         True,
@@ -58,7 +63,7 @@ class Recorder():
         '''
         Extract and append key press data. 
         pressed True indicates pressed key, False indicates released
-        See save for format
+        See write method for format
         '''
         press_data = [
                         self.time_elapsed(),
@@ -79,8 +84,6 @@ class Recorder():
         while self.recording:
             continue
         self.on_stop()
-
-        print(self.recorded_moves)
         
 
         # with self.m_listener as m_listener, self.kb_listener as kb_listener:
@@ -100,24 +103,39 @@ class Recorder():
         self.m_listener.start()
         self.kb_listener.start()
 
+
     def on_stop(self):
         '''Stop recording of kbm presses'''
         #Stop the listeners
         self.m_listener.stop()
         self.kb_listener.stop()
 
+    def write(self, filepath):
+        '''Write recorded moves to csv file'''
+        labels = [
+                    'Time', 
+                    'Mouse', 
+                    'x', 
+                    'y', 
+                    'Button', 
+                    'Mouse Pressed', 
+                    'Key', 
+                    'Key Pressed'
+                ]
+        df = pd.DataFrame(self.recorded_moves, columns = labels)
+        df.to_csv(filepath)
+        print(f'Recorded moves written to {filepath}')
+
+
     def time_elapsed(self):
         '''Returns time elapsed since start of recording'''
         return time.time() - self.start_time
 
-
-    #Load
-    #Save
 
 
 
 if __name__ == '__main__':
     recorder = Recorder()
     recorder.record()
-    
+    recorder.write('recordings/test.csv')
     
