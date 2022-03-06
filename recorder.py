@@ -41,17 +41,18 @@ class Recorder():
 
 
     def append_click(self, x, y, button, pressed):
-        '''Extract and append click data. See write method for format'''
-        click_data = [
-                        self.time_elapsed(),
-                        True,
-                        x, 
-                        y, 
-                        button, 
-                        pressed, 
-                        None, 
-                        None
-                    ]
+        '''Extract and append click data'''
+        click_data = {
+                        'time': self.time_elapsed(),
+                        'mouse_bool': True,
+                        'mouse_x': x, 
+                        'mouse_y': y, 
+                        'mouse_button': button, 
+                        'mouse_pressed': pressed, 
+                        'key': None, 
+                        'key_pressed': None
+                    }
+
         self.recorded_moves.append(click_data)
 
 
@@ -75,18 +76,18 @@ class Recorder():
         '''
         Extract and append key press data. 
         pressed True indicates pressed key, False indicates released
-        See write method for format
         '''
-        press_data = [
-                        self.time_elapsed(),
-                        False, 
-                        None, 
-                        None, 
-                        None, 
-                        None, 
-                        key, 
-                        pressed
-                    ]
+        press_data = {
+                        'time': self.time_elapsed(),
+                        'mouse_bool': False,
+                        'mouse_x': None, 
+                        'mouse_y': None, 
+                        'mouse_button': None, 
+                        'mouse_pressed': None, 
+                        'key': key, 
+                        'key_pressed': pressed
+                    }
+
         self.recorded_moves.append(press_data)
 
 
@@ -120,17 +121,7 @@ class Recorder():
 
     def write(self, filepath):
         '''Write recorded moves to csv file'''
-        labels = [
-                    'Time', 
-                    'Mouse', 
-                    'x', 
-                    'y', 
-                    'Button', 
-                    'Mouse Pressed', 
-                    'Key', 
-                    'Key Pressed'
-                ]
-        df = pd.DataFrame(self.recorded_moves, columns = labels)
+        df = pd.DataFrame(self.recorded_moves)
         df.to_csv(filepath)
         print(f'Recorded moves written to {filepath}')
 
@@ -146,8 +137,8 @@ class Recorder():
 
         #Iterate through stored moves
         for move in self.recorded_moves:
-            move_time = move[0]
-            self.wait(move_time)                        #Wait to execute next move
+            move_time = move['time']
+            self.wait(move_time)                    #Wait to execute next move
             self.execute_move(move)
         
         self.on_play_finish()
@@ -167,21 +158,23 @@ class Recorder():
         while self.time_elapsed() < target_time:
             time.sleep(self.wait_time)
             if self.time_elapsed() >= self.timeout:
-                raise TimeoutError('Timeout while waiting for next playback command')
+                raise TimeoutError('Timeout while waiting for next playback '+\
+                                     'command')
 
 
     def execute_move(self, move):
         '''Execute a mouse/keyboard move'''
-        mouse_bool = move[1]
+        mouse_bool = move['mouse_bool']
 
         #Mouse presses
         if mouse_bool:
-            x, y, button, m_pressed = move[2], move[3], move[4], move[5]
+            x, y, button, m_pressed = move['mouse_x'], move['mouse_y'], \
+                                    move['mouse_button'], move['mouse_pressed']
             self.click_mouse(x, y, button, m_pressed)
 
         #Keyboard presses
         else:
-            key, k_pressed = move[6], move[7]
+            key, k_pressed = move['key'], move['key_pressed']
             self.press_key(key, k_pressed)
 
 
