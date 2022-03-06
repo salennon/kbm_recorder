@@ -35,9 +35,15 @@ class Recorder():
 
     def on_click(self, x, y, button, pressed):
         '''Performed on mouse click during recording'''
+        self.print_click(x, y, button, pressed)
+        self.append_click(x, y, button, pressed)
+
+
+    @staticmethod
+    def print_click(x, y, button, pressed):
+        '''Print details of mouse click'''
         press_type  = 'pressed' if pressed else 'released'
         print(f'{button} mouse {press_type} at ({x},{y})')
-        self.append_click(x, y, button, pressed)
 
 
     def append_click(self, x, y, button, pressed):
@@ -62,14 +68,21 @@ class Recorder():
             print(f'Stop key {self.stop_key} pressed - stopping recording')
             self.recording = False
         else:
-            print(f'Key {key} pressed')
+            self.print_key(key, True)
             self.append_press(key, True)
 
 
     def on_release(self, key):
         '''Performed on key press during recording'''
-        print(f'Key {key} released')
+        self.print_key(key, False)
         self.append_press(key, False)
+
+
+    @staticmethod
+    def print_key(key, pressed):
+        '''Print details of key pressed'''
+        press_type  = 'pressed' if pressed else 'released'
+        print(f'Key {key} {press_type}')
 
     
     def append_press(self, key, pressed):
@@ -162,7 +175,7 @@ class Recorder():
                                      'command')
 
 
-    def execute_move(self, move):
+    def execute_move(self, move, print_move = True):
         '''Execute a mouse/keyboard move'''
         mouse_bool = move['mouse_bool']
 
@@ -172,10 +185,16 @@ class Recorder():
                                     move['mouse_button'], move['mouse_pressed']
             self.click_mouse(x, y, button, m_pressed)
 
+            if print_move:
+                self.print_click(x, y, button, m_pressed)
+
         #Keyboard presses
         else:
             key, k_pressed = move['key'], move['key_pressed']
             self.press_key(key, k_pressed)
+
+            if print_move:
+                self.print_key(key, k_pressed)
 
 
     def click_mouse(self, x, y, button, pressed):
