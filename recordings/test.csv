@@ -1,7 +1,7 @@
 ,Time,Mouse,x,y,Button,Mouse Pressed,Key,Key Pressed
-0,0.254321813583374,True,866,635,Button.left,True,,
-1,0.37898778915405273,True,866,634,Button.left,False,,
-2,1.0681452751159668,True,1451,688,Button.left,True,,
-3,1.1640853881835938,True,1451,688,Button.left,False,,
-4,2.008796453475952,True,2070,708,Button.left,True,,
-5,2.150453805923462,True,2070,708,Button.left,False,,
+0,1.4982740879058838,True,1067,226,Button.left,True,,
+1,1.6997008323669434,True,1067,226,Button.left,False,,
+2,2.607377052307129,True,1016,576,Button.left,True,,
+3,2.7948391437530518,True,1016,576,Button.left,False,,
+4,3.794201612472534,True,1051,410,Button.left,True,,
+5,3.9537782669067383,True,1051,410,Button.left,False,,

@@ -3,6 +3,8 @@ Class to record and play back mouse clicks and keyboard presses using pynput.
 
 Note: May have compatibility issues with different OS and resolutions
 
+TODO:
+Add compatibility for Windows icon scaling
 '''
 
 from pynput import mouse, keyboard
@@ -185,8 +187,7 @@ class Recorder():
 
     def click_mouse(self, x, y, button, pressed):
         '''Execute a mouse click or release at desired (x, y) position'''
-        self.m_controller.move(x, y)
-        print(x,y)
+        self.m_controller.position = (x, y)
 
         if pressed:
             self.m_controller.press(button)
