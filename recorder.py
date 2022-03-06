@@ -1,20 +1,26 @@
 '''
 Class to record and play back mouse clicks and keyboard presses using pynput.
 
-Note: May have compatibility issues with different OS and resolutions
+Compatible with Windows 10. Other OS's not tested.
 
 TODO:
-Add compatibility for Windows icon scaling
+DPI awareness testing
 '''
 
 from pynput import mouse, keyboard
 import time
 import pandas as pd
+import ctypes
+import textwrap
 
 class Recorder():
     '''Class to handle recording and playback of mouse clicks'''
 
     def __init__(self):
+        #Windows 10 compatibility with different monitor DPIs - (allows 
+        #different resolutions and scaling to be used)
+        self.set_dpi_awareness(2)
+
         #Init keyboard and mouse listeners
         self.m_listener = mouse.Listener(on_click = self.on_click)
         self.kb_listener = keyboard.Listener(on_press = self.on_press, 
@@ -220,6 +226,74 @@ class Recorder():
         print('Completed playback of clicks/key presses')
 
 
+    @staticmethod
+    def get_dpi_awareness():
+        '''
+        Query display DPI awareness of the app - whether monitor resolution
+        and scaling factors are accounted for. This affects the mouse position 
+        of the recorder/controller.
+
+        More info here:
+        https://tinyurl.com/mu45xfp3
+        '''
+        awareness = ctypes.c_int()
+        ctypes.windll.shcore.GetProcessDpiAwareness(0, ctypes.byref(awareness))
+        print(f'DPI awareness value: {awareness.value}')
+        if awareness.value == 0:
+            print(textwrap.dedent(
+                    '''
+                    DPI unaware. This app does not scale for DPI changes and is 
+                    always assumed to have a scale factor of 100% (96 DPI). It 
+                    will be automatically scaled by the system on any other DPI 
+                    setting.
+                    '''
+                    )
+                )
+        elif awareness.value == 1:
+            print(textwrap.dedent(
+                    '''
+                    System DPI aware. This app does not scale for DPI changes. 
+                    It will query for the DPI once and use that value for the 
+                    lifetime of the app. If the DPI changes, the app will not 
+                    adjust to the new DPI value. It will be automatically scaled
+                    up or down by the system when the DPI changes from the 
+                    system value.
+                    '''
+                    )
+                )
+        
+        elif awareness.value == 2:
+            print(textwrap.dedent(
+                    '''
+                    Per monitor DPI aware. This app checks for the DPI when it
+                    is created and adjusts the scale factor whenever the DPI 
+                    changes. These applications are not automatically scaled 
+                    by the system.
+                    '''
+                    )
+                )
+        
+        else:
+            raise ValueError(f'DPI awareness value {awareness.value} not '+ \
+                                'recognised')
+
+        return awareness.value
+
+
+    @staticmethod
+    def set_dpi_awareness(awareness):
+        '''
+        Set display DPI awareness of the app - whether monitor resolution
+        and scaling factors are accounted for. This affects the mouse position 
+        of the recorder/controller.
+
+        See self.query_dpi_awareness for levels.
+
+        More info here:
+        https://tinyurl.com/mu45xfp3
+        '''
+        error_code = ctypes.windll.shcore.SetProcessDpiAwareness(awareness)
+        return error_code
 
 
 if __name__ == '__main__':
