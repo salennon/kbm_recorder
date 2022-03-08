@@ -5,6 +5,8 @@ Compatible with Windows 10. Other OS's not tested.
 
 TODO:
 DPI awareness testing
+Read and execute moves from file
+Build in failsafe?
 '''
 
 from pynput import mouse, keyboard
@@ -12,6 +14,7 @@ import time
 import pandas as pd
 import ctypes
 import textwrap
+import sys
 
 class Recorder():
     '''Class to handle recording and playback of mouse clicks'''
@@ -148,6 +151,46 @@ class Recorder():
     def time_elapsed(self):
         '''Returns time elapsed since start of recording'''
         return time.time() - self.start_time
+
+
+    def read(self, filepath):
+        '''
+        Read recorded moves from csv file
+        
+        UNDER CONSTRUCTION
+        TODO:
+        Convert csv/df values to readable by the recorder. Some will need to
+        generate objects to be read.
+        '''
+        moves_df = pd.read_csv(filepath)
+
+        for index, row in moves_df.iterrows():
+            #For mouse button, convert to button object
+            #for keys, if not a simple character then convert to keys object.
+
+            button_name = row['mouse_button'].split('.')[-1]
+            mouse_button = getattr(mouse.Button, button_name)
+
+            print(mouse_button)
+
+
+            #Convert key press
+
+        #     #Read move
+        #     move = {
+        #                 'time': float(row['time']),
+        #                 'mouse_bool': bool(row['mouse_bool']),
+        #                 'mouse_x': float(row[mouse_x]), 
+        #                 'mouse_y': float(row[mouse_y]),  
+        #                 'mouse_button': None, 
+        #                 'mouse_pressed': None, 
+        #                 'key': key, 
+        #                 'key_pressed': pressed
+        #             }
+
+
+        # self.recorded_moves = df.to_dict('records')
+
 
 
     def play(self):
@@ -295,10 +338,14 @@ class Recorder():
         error_code = ctypes.windll.shcore.SetProcessDpiAwareness(awareness)
         return error_code
 
+ 
+
 
 if __name__ == '__main__':
     recorder = Recorder()
-    recorder.record()
-    recorder.write('recordings/test.csv')
-    recorder.play()
+    recorder.read('recordings/test.csv')
+    # recorder.play()
+    # recorder.record()
+    # recorder.write('recordings/test.csv')
+    # recorder.play()
     
