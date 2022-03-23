@@ -32,8 +32,8 @@ class Recorder():
         self.start_time = time.time()           
         self.stop_key = keyboard.Key.esc        
 
-        self.timeout = 120        #Default timeout (s) for playback
-        self.wait_time = 0.01     #Minimum time between executing playback steps
+        self.playback_timeout = 120        #Default timeout (s) for playback
+        self.playback_resolution = 0.01     #Minimum time between playback steps
 
 
     def on_click(self, x, y, button, pressed):
@@ -170,8 +170,8 @@ class Recorder():
         Raises TimeoutError if wait time exceeds self.timout
         '''
         while self.time_elapsed() < target_time:
-            time.sleep(self.wait_time)
-            if self.time_elapsed() >= self.timeout:
+            time.sleep(self.playback_resolution)
+            if self.time_elapsed() >= self.playback_timeout:
                 raise TimeoutError('Timeout while waiting for next playback '+\
                                      'command')
 
