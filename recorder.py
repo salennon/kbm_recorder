@@ -14,12 +14,9 @@ import ctypes
 import textwrap
 
 class Recorder():
-    '''Class to handle recording and playback of mouse clicks'''
+    '''Class to handle recording and playback of mouse clicks and key presses'''
 
     def __init__(self):
-        #Windows 10 compatibility with different monitor DPIs - (allows 
-        #different resolutions and scaling to be used)
-        self.set_dpi_awareness(2)
 
         #Init keyboard and mouse listeners
         self.m_listener = mouse.Listener(on_click = self.on_click)
@@ -30,10 +27,10 @@ class Recorder():
         self.m_controller = mouse.Controller()
         self.kb_controller = keyboard.Controller()
 
-        self.recording = False                  #Recording status
-        self.recorded_moves = []                #Record of recorded moves
-        self.start_time = time.time()           #Start time of recording
-        self.stop_key = keyboard.Key.esc        #Key to stop recording
+        self.recording = False                 
+        self.recorded_moves = []                
+        self.start_time = time.time()           
+        self.stop_key = keyboard.Key.esc        
 
         self.timeout = 120        #Default timeout (s) for playback
         self.wait_time = 0.01     #Minimum time between executing playback steps
@@ -226,6 +223,17 @@ class Recorder():
         print('Completed playback of clicks/key presses')
 
 
+    def configure_display_compatibility(self, dpi_awareness = 2):
+        '''
+        Configure Windows 10 display settings for compatibility with different
+        monitor DPIs (allows different resolutions and scaling to be used)
+        '''
+        dpi_awareness = 2
+        print('\nConfiguring Windows 10 display settings')
+        self.set_dpi_awareness(dpi_awareness)
+        print(f'DPI awareness set to {dpi_awareness}\n')
+
+
     @staticmethod
     def get_dpi_awareness():
         '''
@@ -236,10 +244,10 @@ class Recorder():
         More info here:
         https://tinyurl.com/mu45xfp3
         '''
-        awareness = ctypes.c_int()
-        ctypes.windll.shcore.GetProcessDpiAwareness(0, ctypes.byref(awareness))
-        print(f'DPI awareness value: {awareness.value}')
-        if awareness.value == 0:
+        dpi_awareness = ctypes.c_int()
+        ctypes.windll.shcore.GetProcessDpiAwareness(0, ctypes.byref(dpi_awareness))
+        print(f'DPI dpi_awareness value: {dpi_awareness.value}')
+        if dpi_awareness.value == 0:
             print(textwrap.dedent(
                     '''
                     DPI unaware. This app does not scale for DPI changes and is 
@@ -249,7 +257,7 @@ class Recorder():
                     '''
                     )
                 )
-        elif awareness.value == 1:
+        elif dpi_awareness.value == 1:
             print(textwrap.dedent(
                     '''
                     System DPI aware. This app does not scale for DPI changes. 
@@ -262,7 +270,7 @@ class Recorder():
                     )
                 )
         
-        elif awareness.value == 2:
+        elif dpi_awareness.value == 2:
             print(textwrap.dedent(
                     '''
                     Per monitor DPI aware. This app checks for the DPI when it
@@ -274,14 +282,14 @@ class Recorder():
                 )
         
         else:
-            raise ValueError(f'DPI awareness value {awareness.value} not '+ \
+            raise ValueError(f'DPI awareness value {dpi_awareness.value} not '+ \
                                 'recognised')
 
-        return awareness.value
+        return dpi_awareness.value
 
 
     @staticmethod
-    def set_dpi_awareness(awareness):
+    def set_dpi_awareness(dpi_awareness):
         '''
         Set display DPI awareness of the app - whether monitor resolution
         and scaling factors are accounted for. This affects the mouse position 
@@ -292,12 +300,13 @@ class Recorder():
         More info here:
         https://tinyurl.com/mu45xfp3
         '''
-        error_code = ctypes.windll.shcore.SetProcessDpiAwareness(awareness)
+        error_code = ctypes.windll.shcore.SetProcessDpiAwareness(dpi_awareness)
         return error_code
 
 
 if __name__ == '__main__':
     recorder = Recorder()
+    recorder.configure_display_compatibility()
     recorder.record()
     recorder.write('recordings/test.csv')
     recorder.play()
