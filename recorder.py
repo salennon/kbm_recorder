@@ -123,14 +123,12 @@ class Recorder():
         self.start_time = time.time()
         self.recording = True
 
-        #Start the listeners
         self.m_listener.start()
         self.kb_listener.start()
 
 
     def on_stop(self):
         '''Stop recording of kbm presses'''
-        #Stop the listeners
         self.m_listener.stop()
         self.kb_listener.stop()
 
@@ -154,7 +152,7 @@ class Recorder():
         #Iterate through stored moves
         for move in self.recorded_moves:
             move_time = move['time']
-            self.wait(move_time)                    #Wait to execute next move
+            self.wait(move_time)
             self.execute_move(move)
         
         self.on_play_finish()
